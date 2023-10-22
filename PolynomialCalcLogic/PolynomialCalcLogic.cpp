@@ -5,6 +5,7 @@
 using namespace std;
 
 enum command { poww = '^', multiplication = '*', division = '/', addition = '+', subtraction = '-' };
+const int noOperator = -1;
 
 void Foo(string);
 vector<string> ParseMonoms(string);
@@ -30,7 +31,20 @@ int main()
 	//spolinom = "2x + 3x^3 - 4x^4 + 5x^5 + 6x^6";
 	spolinom = "(x + 2x^2) * ((2x + 3x^3 - 4x^4) + (5x^4 + 6x^6))";
 
-	Foo(spolinom);
+	// yes  Foo("(x + 2x^2) * ((2x + 3x^3 - 4x^4) + (5x^4 + 6x^6))");
+	// yes  Foo("(x + 2x^2) - ((2x + 3x^3 - 4x^4) - (5x^4 + 6x^6))");
+	// yes  Foo("(x + 2x^2) * ((2x + 3x^3 - 4x^4) + (5x^4 + 6x^6) + (5x^7 + 6x^8))");
+	// yes  Foo("(x + 2x^2) * ((2x + 3x^3 - 4x^4) - (5x^4 + 6x^6) + (5x^7 + 6x^8))");
+	// yes  Foo("(x + 2x^2) * ((2x + 3x^3 - 4x^4) + (5x^4 + 6x^6) - (5x^7 + 6x^8))");
+	// yes  Foo("(x + 2x^2) * ((2x + 3x^3 - 4x^4) * (5x^4 + 6x^6) + (5x^7 + 6x^8))");
+	// yes  Foo("(x + 2x^2) * ((2x + 3x^3 - 4x^4) - (5x^4 + 6x^6) * (5x^7 + 6x^8))");
+	// yes  Foo("(x + 2x^2) * ((2x + 3x^3 - 4x^4) - (5x^4 + 6x^6) - (5x^7 + 6x^8))");
+	// yes  Foo("(x + 2x^2) - (2x + 3x^3 - 4x^4) + (5x^4 + 6x^6)");
+	// yes  Foo("(x + 2x^2) + ((2x + 3x^3 - 4x^4) * (5x^4 + 6x^6) + (5x^3 + 6x^7)) - (2x + 1)");
+	
+	// yes  Foo("(x^4+2x) + ((x+1) + (2x+1) * (x^10) * (12x^2 + 23))");
+
+	// no Foo("(x + 2x^2) + ((2x + 3x^3 - 4x^4) * (5x^4 + 6x^6) + (5x^3 + 6x^7))/(2x + 1)"); // + добавить проверку на множество действий после группы
 
 	//LMonoms = ParseMonoms(spolinom);
 	//vector<int>* polinom = (CreatePolinom(LMonoms));
@@ -42,71 +56,117 @@ int main()
 void Foo(string sPolinom) {
 	stack<int> skob;															// стек открытых скобок
 	vector<vector<int>*>* polinoms = new vector<vector<int>*>();				// Список матриц полиномов
-	stack <tuple<char, vector<int>*, vector<int>*>> Actions;
 
-	bool isEndPolinom = false;
-	bool isAction = false;
+	// byte - номер слоя (вложенности), char - оператор, string* - левый операнд, string* - правый операнд
+	stack <tuple<byte, string, char, string>> Task;								// стек последовательности действий с полиномами
+	enum ETask {Layer, Pol1, Operator, Pol2};									
 
+ 	bool isEndPolinom(0), isOperation(0), isHightPriority(0), isLowPriority(0), isGroup(0);
+
+	char ch;
+	string FindPolinom;
+
+	// Добавить проверку, есть ли вообще скобки, мб ввелся только 1 полином
 	try {
 		for (int i = 0; i < sPolinom.length(); i++) {
 
+			ch = sPolinom[i];
+
 			// Встречено начало полинома или группы полиномов
-			if (sPolinom[i] == '(') {
+			if (ch == '(') {
 				skob.push(i);
 
-				// Если встречена группа
-				if (skob.size() > 1) isAction = true;
+				// Если встречена группировка полиномов - вводится множество
+				//if (skob.size() > 1 && skob.size()%2 == 0) 
+				if(skob.size() > 1 && sPolinom[i - 1] == ch)
+					isGroup = true;
 			}
 
 			// Встречено окончание полинома
-			else if (sPolinom[i] == ')') {
-				if (skob.size() != NULL) {
-					string a = sPolinom.substr(skob.top() + 1, i - 1 - skob.top());
-					// Преобразование строки с полиномом в матрицу
-					polinoms->push_back(CreatePolinom(ParseMonoms(a)));
-					skob.pop();
+			else if (ch == ')') {
+				if (skob.size() != 0) {
 
-					isEndPolinom = true;
-
-					// Если в слое вводится второй полином
-					if (isAction) {
-						//auto [ch, vec1, vec2] = Actions.top();
-						//(Actions.top()).get<2>() = polinoms->back();
-						get<2>(Actions.top()) = polinoms->back();
-						//Actions.top() = { get<0>(Actions.top()), get<1>(Actions.top()), polinoms->back() };
-
-						isAction = false;
-						//isEndPolinom = false;
+					// Пропуск обработки, если скобки закрылись для группы
+					if (skob.size() == 1 && sPolinom[i-1] == ch) {
+						skob.pop();
+						isGroup = false;
+						continue;
 					}
+
+					FindPolinom = sPolinom.substr(skob.top() + 1, i - 1 - skob.top());			// Полином
+					skob.pop();
+					isEndPolinom = true;
+					
+					if(isGroup)
+						isHightPriority = isLowPriority = false;
+
+					// Если в слое вводится второй полином и не было встречено действия с повышенным приоритетом
+					if (!isGroup && (isOperation || isHightPriority)) {			// недостаточные условия						
+							get<Pol2>(Task.top()) = FindPolinom;
+					}
+					else {
+						Task.push({ skob.size(), FindPolinom, noOperator, "" });
+						isOperation = false;
+						isGroup = false;
+					}
+
 				}
 				else throw exception("Ошибка в записи полинома.");
-			}
+ 			}
 
-			// Ввод последующих полиномов
-			else if (isEndPolinom && isAction && (sPolinom[i] == multiplication || sPolinom[i] == division ||
-				sPolinom[i] == addition || sPolinom[i] == subtraction))
-			{
+			// Добавление нового полинома с последовательным приоритетом действий
+			else if (isEndPolinom && (ch == addition || ch == subtraction)) {
 				isEndPolinom = false;
-				auto a = (*polinoms).back();
-				vector<int>* vec1 = a;
-				//Actions.top()({ sPolinom[i], vec1, NULL });
-			}
 
-			// Если введён первый полином
-			else if (isEndPolinom && (sPolinom[i] == multiplication || sPolinom[i] == division ||
-				sPolinom[i] == addition || sPolinom[i] == subtraction))
-			{
+				// Если на слое не было задач повышенной приоритетности
+				if (!isHightPriority && !isLowPriority) {
+					if (get<Operator>(Task.top()) == noOperator ) {		// || ch == subtraction мб ошибка, если у задачи уже был знак, а он заменяется на отриц
+						get<Operator>(Task.top()) = ch;
+						isOperation = true;						
+					}
+					else {
+						if (get<Operator>(Task.top()) == subtraction || get<Layer>(Task.top()) != skob.size()) {
+							Task.push({ skob.size(), "",  ch, ""});
+							isOperation = true;
+						}
+						else {
+							get<Pol2>(Task.top()) = "";
+							Task.push({ skob.size(), FindPolinom , ch, "" });
+							isOperation = true;
+						}
+					}
+				}
+				else {
+					Task.push({ skob.size(), "" , ch, ""});
+				}
+
+				isHightPriority = isLowPriority = false;
+			}
+			// Ввод полиномов повышенного приоритета
+			else if (isEndPolinom && (ch == multiplication || ch == division)) {
+
 				isEndPolinom = false;
-				auto a = (*polinoms).back();
-				vector<int>* vec1 = a;
-				Actions.push({ sPolinom[i], vec1, NULL });
+				isLowPriority =	!(isHightPriority = ch == multiplication);
+
+				if (get<Operator>(Task.top()) == noOperator) {
+					get<Operator>(Task.top()) = ch;
+					isOperation = true;
+				}
+				//if (get<Operator>(Task.top()) == subtraction) {
+				//	Task.push({ skob.size(), "",  ch, "" });
+				//}
+				else if (get<Layer>(Task.top()) == skob.size()) {
+					get<Pol2>(Task.top()) = "";
+					Task.push({ skob.size(), FindPolinom, ch , "" });
+					isOperation = true;
+				}					
 			}
 		}
 	}
 	catch (const std::exception& e) {
 		cout << "\n\t Error: " << e.what() << endl;
 	}
-	delete polinoms;
+   	delete polinoms;
 }
 
 /// <summary>
