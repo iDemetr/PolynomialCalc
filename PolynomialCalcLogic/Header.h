@@ -9,6 +9,12 @@
 #include <fstream>		
 #include <windows.h>
 #include <vector>
+#include <stack>
+#include <tuple>
+
+
+enum command { poww = '^', multiplication = '*', division = '/', addition = '+', subtraction = '-' };
+const int noOperator = -1;
 
 
 #endif HEADER_H
