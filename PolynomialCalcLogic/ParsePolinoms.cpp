@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Header.h"
+#include "PrintPolinoms.h"
 
 using namespace std;
 
@@ -15,7 +16,7 @@ std::vector<string> ParseMonoms(string sPolinom) {
 	int pos(0), numPolinom(0);
 	string value, lastValue;
 
-	cout << "Формирование списка мономов..." << endl;
+	cout << "\n Формирование списка мономов...\n\t";
 
 	// Парсинг введенной строки с разбиеним в список по мономам
 	do {
@@ -34,7 +35,6 @@ std::vector<string> ParseMonoms(string sPolinom) {
 		}
 	} while (pos != -1);
 
-	cout << "Сформированный список мономов:" << endl;
 	for (string var : list) {
 		cout << var << ", ";
 	}
@@ -49,19 +49,15 @@ std::vector<string> ParseMonoms(string sPolinom) {
 /// </summary>
 /// <param name="LMonoms"></param>
 /// <returns></returns>
-tprPolinom CreatePolinom(std::vector<string> LMonoms) {
+ptrPolinom CreatePolinom(std::vector<string> LMonoms) {
 
 	string variable = "";
 	string  value;
 	int rank(0);
 
-	tprPolinom polinom = new Polinom();
+	ptrPolinom polinom = new Polinom();
 
-	cout << "Формирование матрицы...\n";
-
-	//for (int i = 0; i < 10; i++) {
-	//	polinom->push_back(0);
-	//}
+	cout << "\n Формирование полинома...\n";
 
 	try {
 		for (string var : LMonoms) {
@@ -110,7 +106,7 @@ tprPolinom CreatePolinom(std::vector<string> LMonoms) {
 				}
 			}
 
-			polinom->push_back({ stoi(value), rank, variable });
+			polinom->insert({ stoi(value), rank, variable });
 
 			variable = ""; isVariable = false;
 		}
@@ -119,6 +115,8 @@ tprPolinom CreatePolinom(std::vector<string> LMonoms) {
 		cout << e.what() << endl;
 		throw;
 	}
+
+	PrintPolinom(polinom);
 
 	return polinom;
 }

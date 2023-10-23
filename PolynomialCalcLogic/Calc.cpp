@@ -3,123 +3,75 @@
 #include "Header.h"
 #include "ParsePolinoms.h"
 
-#include <set>
+#include <algorithm>
 
 using namespace std;
 
 #pragma region --- Мат функции ---
 
 
-tprPolinom SumPol(tprPolinom pol1, tprPolinom pol2) {
+ptrPolinom SumPol(const ptrPolinom p1, const ptrPolinom p2) {
+	
+	ptrPolinom output = new Polinom;
+
+	vector<Monom> setDifference1, setDifference2;
+
+	set_difference(p1->begin(), p1->end(), p2->begin(), p2->end(), std::back_inserter(setDifference1));
+	set_difference(p2->begin(), p2->end(), p1->begin(), p1->end(), std::back_inserter(setDifference2));
+
+	for (Monom monom1 : *p1) {
+		for (Monom monom2 : *p2) {
+			if (monom1 == monom2) {
+				output->insert({ monom1.Ratio + monom2.Ratio, monom1.Rank });
+				break;
+			}
+		}
+	}
+
+	output->insert(setDifference1.begin(), setDifference1.end());
+	output->insert(setDifference2.begin(), setDifference2.end());
 		
-	tprPolinom pol = new Polinom();
-	bool isAdded = false;
-
-	// Временный буфер потеряшек
-	tprPolinom tmp = new Polinom();
-
-	for (Monom monom1 : *pol1) {
-		for (Monom monom2 : *pol2) {
-			if (monom1.Rank == monom2.Rank) {
-				pol->push_back({ monom1.Ratio + monom2.Ratio, monom1.Rank });
-				
-				tmp->push_back(monom2);			// Пересечение коллекций
-				
-				isAdded = true;
-				break;
-			}
-		}
-
-		// Если моном не был найден во втором полиноме.
-		if (!isAdded) {
-			isAdded = false;
-			pol->push_back(monom1);
-		}
-	}
-
-	isAdded = false;
-	// Разница коллекций
-	for (Monom monom2 : *pol2) {
-		for(Monom a : *tmp) {
-			if (a.Rank == monom2.Rank) {
-				isAdded = true;
-				break;
-			}
-		}
-
-		if (!isAdded) {
-			pol->push_back(monom2);
-			isAdded = false;
-		}
-	}
-
-	// Нужна сортировка
-
-	return pol;
+	return  output;
 }
 
-tprPolinom SubtractPol(tprPolinom pol1, tprPolinom pol2) {
-	tprPolinom pol = new Polinom();
-	bool isAdded = false;
+ptrPolinom SubtractPol(ptrPolinom p1, ptrPolinom p2) {
 
-	// Временный буфер потеряшек
-	tprPolinom tmp = new Polinom();
+	ptrPolinom output = new Polinom;
 
-	for (Monom monom1 : *pol1) {
-		for (Monom monom2 : *pol2) {
-			if (monom1.Rank == monom2.Rank) {
-				pol->push_back({ monom1.Ratio - monom2.Ratio, monom1.Rank });
+	vector<Monom> setDifference1, setDifference2;
 
-				tmp->push_back(monom2);			// Пересечение коллекций
+	set_difference(p1->begin(), p1->end(), p2->begin(), p2->end(), std::back_inserter(setDifference1));
+	set_difference(p2->begin(), p2->end(), p1->begin(), p1->end(), std::back_inserter(setDifference2));
 
-				isAdded = true;
+	for (Monom monom1 : *p1) {
+		for (Monom monom2 : *p2) {
+			if (monom1 == monom2) {
+				output->insert({ monom1.Ratio - monom2.Ratio, monom1.Rank });
 				break;
 			}
 		}
-
-		// Если моном не был найден во втором полиноме.
-		if (!isAdded) {
-			isAdded = false;
-			pol->push_back(monom1);
-		}
 	}
 
-	isAdded = false;
-	// Разница коллекций
-	for (Monom monom2 : *pol2) {
-		for (Monom a : *tmp) {
-			if (a.Rank == monom2.Rank) {
-				isAdded = true;
-				break;
-			}
-		}
+	output->insert(setDifference1.begin(), setDifference1.end());
+	output->insert(setDifference2.begin(), setDifference2.end());
 
-		if (!isAdded) {
-			pol->push_back(monom2);
-			isAdded = false;
-		}
-	}
-
-	// Нужна сортировка
-
-	return pol;
+	return  output;
 }
 
-tprPolinom MultiPol(tprPolinom pol1, tprPolinom pol2) {
+ptrPolinom MultiPol(ptrPolinom pol1, ptrPolinom pol2) {
 
-	tprPolinom resMulti = new Polinom();
-	tprPolinom tmp = nullptr;				// Указатель на новую сумму, для очистки суммы предыдущей итерации 
-	tprPolinom sum = nullptr;
+	ptrPolinom resMulti = new Polinom();
+	ptrPolinom tmp = nullptr;				// Указатель на новую сумму, для очистки суммы предыдущей итерации 
+	ptrPolinom sum = nullptr;
 	string variable = "";
 	int step(0);
 
-	for (int i = 0; i < pol1->size(); i++) {
-		for (int j = 0; j < pol2->size(); j++) {
-			if ((*pol1)[i].Ratio != 0 && (*pol2)[j].Ratio != 0)
+	for (Monom monom1 : (*pol1)) {
+		for (Monom monom2 : (*pol2)) {
+			if (monom1.Ratio != 0 && monom2.Ratio != 0)
+				variable = monom1.variable == monom2.variable ? monom2.variable : monom1.variable + monom2.variable;
 
-				variable = (*pol1)[i].variable == (*pol2)[j].variable ? (*pol2)[j].variable : (*pol1)[i].variable + (*pol2)[j].variable;
-
-			resMulti->push_back({ (*pol1)[i].Ratio * (*pol2)[j].Ratio, (*pol1)[i].Rank + (*pol2)[j].Rank });
+			resMulti->insert({ monom1.Ratio * monom2.Ratio, monom1.Rank + monom2.Rank });
 		}
 
 		if (sum != nullptr) {
@@ -137,15 +89,16 @@ tprPolinom MultiPol(tprPolinom pol1, tprPolinom pol2) {
 #pragma endregion
 
 
-tprPolinom Calc(stack <tuple<byte, string, char, string>>* Tasks) {
+ptrPolinom Calc(stack <tuple<byte, string, char, string>>* Tasks) {
 
 	string sPol1 = "", sPol2 = "";
-	tprPolinom vPol1 = NULL, vPol2 = NULL, resTask = nullptr;
+	ptrPolinom vPol1 = NULL, vPol2 = NULL, resTask = nullptr;
 
 	if (Tasks == nullptr)
 		return nullptr;
 
 	while (Tasks->size() != 0) {
+
 		auto Task = Tasks->top();
 
 		#pragma region --- Селектор ---
@@ -166,6 +119,16 @@ tprPolinom Calc(stack <tuple<byte, string, char, string>>* Tasks) {
 		}
 
 		#pragma endregion
+
+
+		cout << "\n Вычисление: \n\t";
+		if(get<Pol1>(Task) != "")
+			cout << get<Pol1>(Task) << " " << get<Operator>(Task) << " " << get<Pol2>(Task);
+		else if(resTask != nullptr && get<Pol1>(Task) != "")
+			cout << get<Pol1>(Task) << " " << get<Operator>(Task) << " " << resTask;
+		else if(resTask != nullptr && get<Pol2>(Task) != "")
+			cout << resTask << " " << get<Operator>(Task) << " " << get<Pol2>(Task);
+			
 
 		switch (get<Operator>(Task))
 		{
@@ -188,6 +151,9 @@ tprPolinom Calc(stack <tuple<byte, string, char, string>>* Tasks) {
 		default:
 			break;
 		}
+
+		cout << "\n Результат: " << (*resTask);
+
 		Tasks->pop();
 	}
 

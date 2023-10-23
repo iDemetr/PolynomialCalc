@@ -131,12 +131,14 @@
     <ClCompile Include="CreateTask_ver0.cpp" />
     <ClCompile Include="ParsePolinoms.cpp" />
     <ClCompile Include="PolynomialCalcLogic.cpp" />
+    <ClCompile Include="PrintPolinoms.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Calc.h" />
     <ClInclude Include="CreateTask.h" />
     <ClInclude Include="Header.h" />
     <ClInclude Include="ParsePolinoms.h" />
+    <ClInclude Include="PrintPolinoms.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

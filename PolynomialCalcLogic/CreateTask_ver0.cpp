@@ -24,6 +24,8 @@ stack <tuple<byte, string, char, string>>* CreateTasks(string sPolinom) {
 	char ch;
 	string FindPolinom;
 
+	cout << "\n Формирование последовательности действий...";
+
 	// Добавить проверку, есть ли вообще скобки, мб ввелся только 1 полином
 	try {
 		for (int i = 0; i < sPolinom.length(); i++) {

@@ -6,6 +6,6 @@ using namespace std;
 #ifndef CALC_H
 #define CALC_H
 
-tprPolinom Calc(stack <tuple<byte, string, char, string>>*);
+ptrPolinom Calc(stack <tuple<byte, string, char, string>>*);
 
-#endif
+#endif CALC_H

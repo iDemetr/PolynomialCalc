@@ -12,7 +12,7 @@
 #include <vector>
 #include <stack>
 #include <tuple>
-
+#include <set>
 
 enum command { poww = '^', multiplication = '*', division = '/', addition = '+', subtraction = '-' };
 
@@ -30,14 +30,27 @@ struct Monom {
 	int Rank;
 	// Аргумент
 	std::string variable = "";
+
+    bool operator<(const Monom& monom) const
+    {
+        return Rank < monom.Rank;
+    }
+
+	//Операторы сравнения
+	bool operator== (const Monom& pol2) {
+		return Rank == pol2.Rank;
+	}
+
+	bool operator!= (const Monom& pol2) {
+		return Rank != pol2.Rank;		
+	}
 };
 
 // Тип полинома
-typedef std::vector<Monom> Polinom;
-typedef std::vector<Monom>* tprPolinom;
+typedef std::set<Monom> Polinom;
+typedef std::set<Monom>* ptrPolinom;
 
 // Заглушка при создании задач
 const int noOperator = -1;
-
 
 #endif HEADER_H

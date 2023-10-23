@@ -8,4 +8,4 @@ using namespace std;
 
 stack <tuple<byte, string, char, string>>* CreateTasks(string);
 
-#endif
+#endif CREATE_TASK_H

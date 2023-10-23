@@ -1,5 +1,5 @@
 ﻿#include "Header.h"
-#include "ParsePolinoms.h"
+//#include "ParsePolinoms.h"
 #include "CreateTask.h"
 #include "Calc.h"
 
@@ -21,8 +21,8 @@ int main()
 	cout << "\n Введите полином: ";
 	//getline(cin, spolinom);
 	//spolinom = "(x + 2x^2) * ((2x + 3x^3 - 4x^4) + (5x^4 + 6x^6))";
-	//spolinom = "(x^2 + 2x + 1) * (x^3 - 7x + 5)";
-	spolinom = "(x^2 + 2x + 1) - (x^4 - 7x^3 - x + 10)";
+	spolinom = "(x^2 + 2x + 1) * (x^3 - 7x + 5)";
+	//spolinom = "(x^2 + 2x + 1) - (x^4 - 7x^3 - x + 10)";
 
 	// yes  Foo("(x + 2x^2) * ((2x + 3x^3 - 4x^4) + (5x^4 + 6x^6))");
 	//CreateTasks("(x + 2x^2) - ((2x + 3x^3 - 4x^4) - (5x^4 + 6x^6))");
@@ -51,4 +51,6 @@ int main()
 
 	std::cout << "Hello World!\n";
 }
+
+
 
