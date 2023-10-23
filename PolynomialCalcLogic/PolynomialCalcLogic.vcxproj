@@ -127,11 +127,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Calc.cpp" />
     <ClCompile Include="CreateTask_ver0.cpp" />
     <ClCompile Include="ParsePolinoms.cpp" />
     <ClCompile Include="PolynomialCalcLogic.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Calc.h" />
     <ClInclude Include="CreateTask.h" />
     <ClInclude Include="Header.h" />
     <ClInclude Include="ParsePolinoms.h" />

@@ -10,12 +10,12 @@ using namespace std;
 /// </summary>
 /// <param name="sPolinom"></param>
 /// <returns></returns>
-vector<string> ParseMonoms(string sPolinom) {
-	vector<string> list;
+std::vector<string> ParseMonoms(string sPolinom) {
+	std::vector<string> list;
 	int pos(0), numPolinom(0);
 	string value, lastValue;
 
-	cout << "Формирование списка монопов..." << endl;
+	cout << "Формирование списка мономов..." << endl;
 
 	// Парсинг введенной строки с разбиеним в список по мономам
 	do {
@@ -49,19 +49,19 @@ vector<string> ParseMonoms(string sPolinom) {
 /// </summary>
 /// <param name="LMonoms"></param>
 /// <returns></returns>
-vector<int>* CreatePolinom(vector<string> LMonoms) {
+tprPolinom CreatePolinom(std::vector<string> LMonoms) {
 
-	char variable = ' ';
+	string variable = "";
 	string  value;
 	int rank(0);
 
-	vector<int>* polinom = new vector<int>();
+	tprPolinom polinom = new Polinom();
 
 	cout << "Формирование матрицы...\n";
 
-	for (int i = 0; i < 10; i++) {
-		polinom->push_back(0);
-	}
+	//for (int i = 0; i < 10; i++) {
+	//	polinom->push_back(0);
+	//}
 
 	try {
 		for (string var : LMonoms) {
@@ -74,7 +74,7 @@ vector<int>* CreatePolinom(vector<string> LMonoms) {
 				if (!isDegree && ch != '^') {
 					// Если название переменной не было встречено
 					if (!isVariable) {
-						rank = 1;
+						rank = 0;
 						// Если символ число или знак числа
 						if (ch >= '0' && ch <= '9' || ch == '-') value += ch;
 
@@ -82,10 +82,10 @@ vector<int>* CreatePolinom(vector<string> LMonoms) {
 						else if (!isVariable) {
 							isVariable = true;
 							variable = ch;
-							if (value == "") value += "1";
-							rank = 2;
+							if (value == "" || value == "-" ) value += "1";
+							rank = 1;
 						}
-						else if (variable != ch)
+						else if (variable[0] != ch)
 							throw exception("\t Ошибка! Больше одной переменных");
 					}
 					// Генерация ошибки, если после встречи переменной не встречен символ степени
@@ -109,11 +109,15 @@ vector<int>* CreatePolinom(vector<string> LMonoms) {
 					}
 				}
 			}
-			(*polinom)[rank - 1] = stoi(value);
+
+			polinom->push_back({ stoi(value), rank, variable });
+
+			variable = ""; isVariable = false;
 		}
 	}
 	catch (const std::exception& e) {
 		cout << e.what() << endl;
+		throw;
 	}
 
 	return polinom;

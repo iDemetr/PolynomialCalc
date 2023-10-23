@@ -4,14 +4,20 @@
 
 using namespace std;
 
-//vector<vector<string>>
-void CreateTasks(string sPolinom) {
-	stack<int> skob;															// стек открытых скобок
-	vector<vector<int>*>* polinoms = new vector<vector<int>*>();				// —писок матриц полиномов
+string invertPolynom(string);
 
-	// byte - номер сло€ (вложенности), char - оператор, string* - левый операнд, string* - правый операнд
-	stack <tuple<byte, string, char, string>> Task;								// стек последовательности действий с полиномами
-	enum ETask { Layer, Pol1, Operator, Pol2 };
+/// <summary>
+/// –азбиение строки с полиномами на последовательность действий.
+/// </summary>
+/// <param name="sPolinom"></param>
+stack <tuple<byte, string, char, string>>* CreateTasks(string sPolinom) {
+	//vector<vector<int>*>* polinoms = new vector<vector<int>*>();				// —писок матриц полиномов
+
+	stack<int> skob;															// стек открытых скобок
+	
+	// byte - номер сло€ (вложенности), char - оператор, string* - левый операнд, string* - правый перанд
+	// стек последовательности действий с полиномами
+	auto* Task = new stack <tuple<byte, string, char, string>>;
 
 	bool isEndPolinom(0), isOperation(0), isHightPriority(0), isLowPriority(0), isGroup(0);
 
@@ -53,13 +59,20 @@ void CreateTasks(string sPolinom) {
 						isHightPriority = isLowPriority = false;
 
 					// ≈сли не новый слой и небыло произведени€/делени€ или холодный запуск 
-					if (!isGroup && (isOperation || isHightPriority)) {			// недостаточные услови€						
-						get<Pol2>(Task.top()) = FindPolinom;
+					if (!isGroup && (isOperation || isHightPriority)) {			// недостаточные услови€		
+						if (get<Operator>(Task->top()) == '-') {
+							FindPolinom = invertPolynom(FindPolinom);
+							get<Operator>(Task->top()) = '+';							
+						}
+						get<Pol2>(Task->top()) = FindPolinom;
 					}
+					
+					// Ќовый слой - нова€ задача
 					else {
-						Task.push({ skob.size(), FindPolinom, noOperator, "" });
+						Task->push({ skob.size(), FindPolinom, noOperator, "" });
 						isGroup = false;
 					}
+					
 					isOperation = false;
 				}
 				else throw exception("ќшибка в записи полинома.");
@@ -67,60 +80,58 @@ void CreateTasks(string sPolinom) {
 
 			// ƒобавление нового полинома с последовательным приоритетом действий
 			else if (isEndPolinom && (ch == addition || ch == subtraction)) {
-				isEndPolinom = false;
 
 				// ≈сли на слое не было задач повышенной приоритетности
 				if (!isHightPriority && !isLowPriority) {
 
 					// ≈сли считан первый полином на слое
-					if (get<Operator>(Task.top()) == noOperator) {		// || ch == subtraction мб ошибка, если у задачи уже был знак, а он замен€етс€ на отриц
-						get<Operator>(Task.top()) = ch;
+					if (get<Operator>(Task->top()) == noOperator) {		// || ch == subtraction мб ошибка, если у задачи уже был знак, а он замен€етс€ на отриц
+						get<Operator>(Task->top()) = ch;
 						isOperation = true;
 					}
+
+					// Ќова€ задача, если ранее было удаление или групировка
+					else if (get<Layer>(Task->top()) != skob.size()) { //get<Operator>(Task.top()) == subtraction ||
+						Task->push({ skob.size(), "",  ch, "" });
+						isOperation = true;
+					}
+
+					// ≈сли была сумма
 					else {
-
-						// Ќова€ задача, если ранее было удаление или групировка
-						if (get<Operator>(Task.top()) == subtraction || get<Layer>(Task.top()) != skob.size()) {
-							Task.push({ skob.size(), "",  ch, "" });
-							isOperation = true;
-						}
-
-						// ≈сли была сумма
-						else {
-							if (get<Pol1>(Task.top()) == "")
-								Task.pop();
-							else
-								get<Pol2>(Task.top()) = "";
-
-
-							Task.push({ skob.size(), FindPolinom , ch, "" });
-							isOperation = true;
-						}
+						get<Pol2>(Task->top()) = "";
+						Task->push({ skob.size(), FindPolinom , ch, "" });
+						isOperation = true;
 					}
 				}
 
 				// ≈сли ранее было произведение/деление - нужна нова€ задача
 				else {
-					Task.push({ skob.size(), "" , ch, "" });
+					Task->push({ skob.size(), "" , ch, "" });
 					isOperation = true;
 				}
 
 				isHightPriority = isLowPriority = false;
+				isEndPolinom = false;
 			}
-			
+
 			// ¬вод операций повышенного приоритета
 			else if (isEndPolinom && (ch == multiplication || ch == division)) {
 
 				isEndPolinom = false;
 				isLowPriority = !(isHightPriority = ch == multiplication);
 
-				if (get<Operator>(Task.top()) == noOperator) {
-					get<Operator>(Task.top()) = ch;
+				if (get<Operator>(Task->top()) == noOperator) {
+					get<Operator>(Task->top()) = ch;
 					isOperation = true;
 				}
-				else if (get<Layer>(Task.top()) == skob.size()) {
-					get<Pol2>(Task.top()) = "";
-					Task.push({ skob.size(), FindPolinom, ch , "" });
+				else if (get<Layer>(Task->top()) == skob.size()) {
+					get<Pol2>(Task->top()) = "";
+					Task->push({ skob.size(), FindPolinom, ch , "" });
+					isOperation = true;
+				}
+				// ≈сли ранее было произведение/деление - нужна нова€ задача
+				else {
+					Task->push({ skob.size(), "" , ch, "" });
 					isOperation = true;
 				}
 			}
@@ -129,6 +140,43 @@ void CreateTasks(string sPolinom) {
 	catch (const std::exception& e) {
 		cout << "\n\t Error: " << e.what() << endl;
 	}
-	delete polinoms;
+
+	return Task;
 }
 
+/// <summary>
+/// »нвертирует знаки входного полинома
+/// </summary>
+/// <param name="str"></param>
+/// <returns></returns>
+string invertPolynom(string str) {
+
+	string output = "";
+	int i(0);
+
+	try {
+		if (str[0] == '-') { i = 1; }
+		else { output += "-"; }
+
+		for (; i < str.size(); i++) {
+			switch (str[i]) {
+			case '+':
+				output += "-";
+				break;
+
+			case '-':
+				output += "+";
+				break;
+
+			default:
+				output += str[i];
+				break;
+			}
+		}
+	}
+	catch (const std::exception& e)
+	{
+		cout << "\t Error: " << e.what() << endl;
+	}
+	return output;
+}
