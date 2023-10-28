@@ -22,7 +22,19 @@ enum command { poww = '^', multiplication = '*', division = '/', addition = '+',
 // Pol2 - правый операнд
 enum ETask { Layer, Pol1, Operator, Pol2 };
 
-// Тип монома
+/// <summary>
+/// Кортеж задачи
+/// </summary>
+#define Task std::tuple<BYTE, string, char, string>
+
+/// <summary>
+/// Стек задач
+/// </summary>
+#define Tasks std::stack <Task>
+
+/// <summary>
+/// Тип монома
+/// </summary>
 struct Monom {
 	// Коэффициент монома
 	int Ratio;
@@ -46,9 +58,36 @@ struct Monom {
 	}
 };
 
-// Тип полинома
+/// <summary>
+/// Тип полинома
+/// </summary>
 typedef std::set<Monom> Polinom;
 typedef std::set<Monom>* ptrPolinom;
+
+/// <summary>
+/// 
+/// </summary>
+struct nodeBuffer{
+	/// <summary>
+	/// Номер слоя.
+	/// </summary>
+	int layer;
+
+	/// <summary>
+	/// Какая операция должна была быть выполнена
+	/// </summary>
+	char operation;
+
+	/// <summary>
+	/// Ссылка на крайний результат на этом слое.
+	/// </summary>
+	ptrPolinom polinom;
+};
+
+/// <summary>
+/// Буфер расчётов
+/// </summary>
+typedef std::stack<nodeBuffer> Buffer;
 
 // Заглушка при создании задач
 const int noOperator = -1;

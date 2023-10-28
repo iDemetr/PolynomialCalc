@@ -43,9 +43,9 @@ int main()
 	//CreateTasks("(x + 2x^2) + ((2x + 3x^3 - 4x^4) * (5x^4 + 6x^6) + (5x^3 + 6x^7))/(2x + 1)"); // + добавить проверку на множество действий после группы
 	//CreateTasks("(x + 2x^2) + ((2x + 3x^3 - 4x^4) * (5x^4 + 6x^6) + (5x^3 + 6x^7))/(2x + 1) + (234x + 43) - ((114x + 222)+(2x^2 + 1))");
 	
-	auto Tasks = CreateTasks(spolinom);
+	auto tasks = CreateTasks(spolinom);
 
-	Calc(Tasks);
+	Calc(tasks);
 
 	//LMonoms = ParseMonoms(spolinom);
 	//vector<int>* polinom = (CreatePolinom(LMonoms));

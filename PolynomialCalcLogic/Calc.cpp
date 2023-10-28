@@ -17,7 +17,7 @@ using namespace std;
 /// <param name="p2"></param>
 /// <returns></returns>
 ptrPolinom SumPol(const ptrPolinom p1, const ptrPolinom p2) {
-	
+
 	ptrPolinom output = new Polinom;
 
 	// Списки не пересекающихся мономов.
@@ -38,7 +38,7 @@ ptrPolinom SumPol(const ptrPolinom p1, const ptrPolinom p2) {
 	// В результирующий полином добавляются не пересекающиеся мономы
 	output->insert(setDifference1.begin(), setDifference1.end());
 	output->insert(setDifference2.begin(), setDifference2.end());
-		
+
 	return  output;
 }
 
@@ -83,8 +83,8 @@ ptrPolinom SubtractPol(const ptrPolinom p1, const ptrPolinom p2) {
 ptrPolinom MultiPol(const ptrPolinom pol1, const ptrPolinom pol2) {
 
 	ptrPolinom resMulti = new Polinom(),
-			   tmp = nullptr,				// Указатель на новую сумму, для очистки суммы предыдущей итерации 
-			   sum = nullptr;
+		tmp = nullptr,				// Указатель на новую сумму, для очистки суммы предыдущей итерации 
+		sum = nullptr;
 	string variable = "";
 	int step(0);
 
@@ -93,7 +93,7 @@ ptrPolinom MultiPol(const ptrPolinom pol1, const ptrPolinom pol2) {
 			if (monom1.Ratio != 0 && monom2.Ratio != 0)
 				variable = monom1.variable == monom2.variable ? monom2.variable : monom1.variable + monom2.variable;
 
-			resMulti->insert({ monom1.Ratio * monom2.Ratio, monom1.Rank + monom2.Rank, variable});
+			resMulti->insert({ monom1.Ratio * monom2.Ratio, monom1.Rank + monom2.Rank, variable });
 		}
 
 		if (sum != nullptr) {
@@ -110,78 +110,154 @@ ptrPolinom MultiPol(const ptrPolinom pol1, const ptrPolinom pol2) {
 
 #pragma endregion
 
+ptrPolinom CulcSwitch(ptrPolinom, char, ptrPolinom);
+ptrPolinom CompleteBuff(BYTE, Buffer&, ptrPolinom, bool);
 
-ptrPolinom Calc(stack <tuple<byte, string, char, string>>* Tasks) {
+ptrPolinom Calc(Tasks* tasks) {
 
-	string sPol1 = "", sPol2 = "";
-	ptrPolinom vPol1 = NULL, vPol2 = NULL, resTask = nullptr;
+	string sPol1 = "";
+	string sPol2 = "";
+	ptrPolinom vPol1 = nullptr;
+	ptrPolinom vPol2 = nullptr;
+	ptrPolinom resTask = nullptr;
 
-	if (Tasks == nullptr)
+	Buffer buffer;
+
+	Task* task;
+	Task taskLast;
+
+	if (tasks == nullptr)
 		return nullptr;
+
+	auto isMulti = [](Task* task) {
+		return (get<Operator>(*task) == '*' && get<Pol1>(*task) != "" && get<Pol2>(*task) != "");
+		};
+
+	auto isSum = [](Task* task) {
+		return (get<Operator>(*task) == '+' && get<Pol2>(*task) == "");
+		};
 
 	cout << "\n\n ==========================  Вычисления ========================== \n";
 
-	while (Tasks->size() != 0) {
+	while (!tasks->empty()) {
 
-		auto Task = Tasks->top();
+		task = &tasks->top();
+
+		#pragma region --- Буферизация ---
+
+		// Запись результата прошлого слоя в буфер.
+		if (get<Layer>(*task) > get<Layer>(taskLast) || isMulti(task)) {	//
+			if (resTask != nullptr) {
+				buffer.push({ get<Layer>(taskLast),get<Operator>(taskLast), resTask });
+				cout << "\n Буферизация: ";
+				cout << "\n Приоритет: " << get<Layer>(taskLast) << " Промежуточный результат на слое: " << resTask;
+			}
+		}
+		// Если новая задача ниже по слою - выполнить все операции из буфера с прежним слоем и аналогичного
+		else if (get<Layer>(*task) < get<Layer>(taskLast)) {
+			resTask = CompleteBuff(get<Layer>(*task), buffer, resTask, true);
+		}
+		// Если новая задача обычного приоритета - выполнить все операции из буфера с таким же слоем.
+		else if (isSum(task) && !buffer.empty()) {
+			resTask = CompleteBuff(get<Layer>(*task), buffer, resTask, false);
+		}
+
+		#pragma endregion
 
 		#pragma region --- Селектор ---
 
-		sPol2 = get<Pol2>(Task);
+		sPol2 = get<Pol2>(*task);
 		if (sPol2 != "")
 			vPol2 = CreatePolinom(ParseMonoms(sPol2));
 		else {
 			vPol2 = resTask;
 		}
 
-		sPol1 = get<Pol1>(Task);
+		sPol1 = get<Pol1>(*task);
 		if (sPol1 != "")
-			vPol1 = CreatePolinom(ParseMonoms(sPol1));		
-		else if (sPol1 == "") {
-			Tasks->pop();
+			vPol1 = CreatePolinom(ParseMonoms(sPol1));
+		else {
+			taskLast = *task;
+			tasks->pop();							// Удаление задачи
+			resTask = vPol2;						// Если операнд текущей задачи был считан - перенос на следующую задачу как результат
 			continue;
 		}
 
+		// Здесь известна проблема - если есть запись вида: (p3) + (p2)*(p1) + (p0) или (p4) + (p3)*(p2)*(p1) + (p0)
+		// то будет потеря p0. Необходимо его записывать в буфер.
+
 		#pragma endregion
 
+		resTask = CulcSwitch(vPol1, get<Operator>(*task), vPol2);
 
-		cout << "\n\n Вычисление: \t";
- 		PrintPolinoms(*vPol1, get<Operator>(Task) ,*vPol2);
-
-		//if(get<Pol1>(Task) != "")
-		//	cout << "(" << get<Pol1>(Task) << ") " << get<Operator>(Task) << " (" << get<Pol2>(Task) << ")";
-		//else if(resTask != nullptr && get<Pol1>(Task) != "")
-		//	cout << "(" << get<Pol1>(Task) << ") " << get<Operator>(Task) << " (" << *resTask << ")";
-		//else if(resTask != nullptr && get<Pol2>(Task) != "")
-		//	cout << "(" << *resTask << ") " << get<Operator>(Task) << " (" << get<Pol2>(Task) << ")";
-			
-
-		switch (get<Operator>(Task))
-		{
-		case addition:
-			resTask = SumPol(vPol1, vPol2);
-			break;
-
-		case subtraction:
-			resTask = SubtractPol(vPol1, vPol2);
-			break;
-
-		case multiplication:
-			resTask = MultiPol(vPol1, vPol2);
-			break;
-
-		case division:
-			//resTask = SumPol(vPol1, vPol2);
-			break;
-
-		default:
-			break;
-		}
-
-		cout << "\n Результат: " << *resTask;
-
-		Tasks->pop();
+		taskLast = *task;
+		tasks->pop();
 	}
 
 	return resTask;
+}
+
+/// <summary>
+/// Осуществляет ветвление по функциям расчёта в зависимости от поданного оператора
+/// </summary>
+/// <param name="pol1">			Левый операнд</param>
+/// <param name="operation">	Оператор</param>
+/// <param name="pol2">			Правый операнд</param>
+/// <returns></returns>
+ptrPolinom CulcSwitch(ptrPolinom pol1, char operation, ptrPolinom pol2) {
+
+	ptrPolinom resTask = nullptr;
+
+	cout << "\n\n Вычисление: \t";
+	PrintPolinoms(*pol1, operation, *pol2);
+
+	switch (operation)
+	{
+	case addition:
+		resTask = SumPol(pol1, pol2);
+		break;
+
+	case subtraction:
+		resTask = SubtractPol(pol1, pol2);
+		break;
+
+	case multiplication:
+		resTask = MultiPol(pol1, pol2);
+		break;
+
+	case division:
+		//resTask = SumPol(vPol1, vPol2);
+		break;
+
+	default:
+		break;
+	}
+
+	cout << "\n Результат: " << *resTask;
+	return resTask;
+}
+
+/// <summary>
+/// Завершает все отложенные вычисления на заданном слое.
+/// </summary>
+/// <param name="layer"></param>
+/// <param name="buffer"></param>
+/// <param name="pol1"></param>
+/// <returns></returns>
+ptrPolinom CompleteBuff(BYTE layer, Buffer& buffer, ptrPolinom pol1, bool flag = false) {
+
+	auto buff = &buffer.top();
+
+	/*if (flag)
+		layer += 1;*/
+
+	if (buff->layer > layer && !flag)
+		throw exception("Нарушение последовательности выполнения действий!");
+
+	while (((buff->layer == layer && !flag) || (buff->layer >= layer && flag)) && !buffer.empty()) {
+		pol1 = CulcSwitch(pol1, buff->operation, buff->polinom);
+		buffer.pop();
+	}
+
+	return pol1;
 }

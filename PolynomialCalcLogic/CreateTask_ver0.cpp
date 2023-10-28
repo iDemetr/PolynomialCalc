@@ -10,14 +10,13 @@ string invertPolynom(string);
 /// Разбиение строки с полиномами на последовательность действий.
 /// </summary>
 /// <param name="sPolinom"></param>
-stack <tuple<byte, string, char, string>>* CreateTasks(string sPolinom) {
+Tasks* CreateTasks(string sPolinom) {
 	//vector<vector<int>*>* polinoms = new vector<vector<int>*>();				// Список матриц полиномов
 
 	stack<int> skob;															// стек открытых скобок
 	
-	// byte - номер слоя (вложенности), char - оператор, string* - левый операнд, string* - правый перанд
 	// стек последовательности действий с полиномами
-	auto* Task = new stack <tuple<byte, string, char, string>>;
+	auto* task = new Tasks;
 
 	bool isEndPolinom(0), isOperation(0), isHightPriority(0), isLowPriority(0), isGroup(0);
 
@@ -62,16 +61,16 @@ stack <tuple<byte, string, char, string>>* CreateTasks(string sPolinom) {
 
 					// Если не новый слой и небыло произведения/деления или холодный запуск 
 					if (!isGroup && (isOperation || isHightPriority)) {			// недостаточные условия		
-						if (get<Operator>(Task->top()) == '-') {
+						if (get<Operator>(task->top()) == '-') {
 							FindPolinom = invertPolynom(FindPolinom);
-							get<Operator>(Task->top()) = '+';							
+							get<Operator>(task->top()) = '+';							
 						}
-						get<Pol2>(Task->top()) = FindPolinom;
+						get<Pol2>(task->top()) = FindPolinom;
 					}
 					
 					// Новый слой - новая задача
 					else {
-						Task->push({ skob.size(), FindPolinom, noOperator, "" });
+						task->push({ skob.size(), FindPolinom, noOperator, "" });
 						isGroup = false;
 					}
 					
@@ -87,28 +86,32 @@ stack <tuple<byte, string, char, string>>* CreateTasks(string sPolinom) {
 				if (!isHightPriority && !isLowPriority) {
 
 					// Если считан первый полином на слое
-					if (get<Operator>(Task->top()) == noOperator) {		// || ch == subtraction мб ошибка, если у задачи уже был знак, а он заменяется на отриц
-						get<Operator>(Task->top()) = ch;
+					if (get<Operator>(task->top()) == noOperator) {		// || ch == subtraction мб ошибка, если у задачи уже был знак, а он заменяется на отриц
+						get<Operator>(task->top()) = ch;
 						isOperation = true;
 					}
 
 					// Новая задача, если ранее было удаление или групировка
-					else if (get<Layer>(Task->top()) != skob.size()) { //get<Operator>(Task.top()) == subtraction ||
-						Task->push({ skob.size(), "",  ch, "" });
+					else if (get<Layer>(task->top()) != skob.size()) { //get<Operator>(Task.top()) == subtraction ||
+						task->push({ skob.size(), "",  ch, "" });
 						isOperation = true;
 					}
 
 					// Если была сумма
 					else {
-						get<Pol2>(Task->top()) = "";
-						Task->push({ skob.size(), FindPolinom , ch, "" });
+						get<Pol2>(task->top()) = "";
+						task->push({ skob.size(), FindPolinom , ch, "" });
 						isOperation = true;
 					}
 				}
 
-				// Если ранее было произведение/деление - нужна новая задача
+				// Если ранее было произведение/деление - нужна новая задача c перестановкой последовательности
 				else {
-					Task->push({ skob.size(), "" , ch, "" });
+					//auto tmp = Task->top();
+					//Task->pop();
+					task->push({ skob.size(), "" , ch, "" });
+					//Task->push(tmp);
+
 					isOperation = true;
 				}
 
@@ -122,18 +125,18 @@ stack <tuple<byte, string, char, string>>* CreateTasks(string sPolinom) {
 				isEndPolinom = false;
 				isLowPriority = !(isHightPriority = ch == multiplication);
 
-				if (get<Operator>(Task->top()) == noOperator) {
-					get<Operator>(Task->top()) = ch;
+				if (get<Operator>(task->top()) == noOperator) {
+					get<Operator>(task->top()) = ch;
 					isOperation = true;
 				}
-				else if (get<Layer>(Task->top()) == skob.size()) {
-					get<Pol2>(Task->top()) = "";
-					Task->push({ skob.size(), FindPolinom, ch , "" });
+				else if (get<Layer>(task->top()) == skob.size()) {
+					get<Pol2>(task->top()) = "";
+					task->push({ skob.size(), FindPolinom, ch , "" });
 					isOperation = true;
 				}
 				// Если ранее было произведение/деление - нужна новая задача
 				else {
-					Task->push({ skob.size(), "" , ch, "" });
+					task->push({ skob.size(), "" , ch, "" });
 					isOperation = true;
 				}
 			}
@@ -143,7 +146,7 @@ stack <tuple<byte, string, char, string>>* CreateTasks(string sPolinom) {
 		cout << "\n\t Error: " << e.what() << endl;
 	}
 
-	return Task;
+	return task;
 }
 
 /// <summary>
