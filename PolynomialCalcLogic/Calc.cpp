@@ -2,6 +2,7 @@
 
 #include "Header.h"
 #include "ParsePolinoms.h"
+#include "PrintPolinoms.h"
 
 #include <algorithm>
 
@@ -9,11 +10,17 @@ using namespace std;
 
 #pragma region --- Мат функции ---
 
-
+/// <summary>
+/// Сложение полиномов
+/// </summary>
+/// <param name="p1"></param>
+/// <param name="p2"></param>
+/// <returns></returns>
 ptrPolinom SumPol(const ptrPolinom p1, const ptrPolinom p2) {
 	
 	ptrPolinom output = new Polinom;
 
+	// Списки не пересекающихся мономов.
 	vector<Monom> setDifference1, setDifference2;
 
 	set_difference(p1->begin(), p1->end(), p2->begin(), p2->end(), std::back_inserter(setDifference1));
@@ -22,22 +29,30 @@ ptrPolinom SumPol(const ptrPolinom p1, const ptrPolinom p2) {
 	for (Monom monom1 : *p1) {
 		for (Monom monom2 : *p2) {
 			if (monom1 == monom2) {
-				output->insert({ monom1.Ratio + monom2.Ratio, monom1.Rank });
+				output->insert({ monom1.Ratio + monom2.Ratio, monom1.Rank, monom1.variable });
 				break;
 			}
 		}
 	}
 
+	// В результирующий полином добавляются не пересекающиеся мономы
 	output->insert(setDifference1.begin(), setDifference1.end());
 	output->insert(setDifference2.begin(), setDifference2.end());
 		
 	return  output;
 }
 
-ptrPolinom SubtractPol(ptrPolinom p1, ptrPolinom p2) {
+/// <summary>
+/// Разница полиномов
+/// </summary>
+/// <param name="p1"></param>
+/// <param name="p2"></param>
+/// <returns></returns>
+ptrPolinom SubtractPol(const ptrPolinom p1, const ptrPolinom p2) {
 
 	ptrPolinom output = new Polinom;
 
+	// Списки не пересекающихся мономов.
 	vector<Monom> setDifference1, setDifference2;
 
 	set_difference(p1->begin(), p1->end(), p2->begin(), p2->end(), std::back_inserter(setDifference1));
@@ -46,23 +61,30 @@ ptrPolinom SubtractPol(ptrPolinom p1, ptrPolinom p2) {
 	for (Monom monom1 : *p1) {
 		for (Monom monom2 : *p2) {
 			if (monom1 == monom2) {
-				output->insert({ monom1.Ratio - monom2.Ratio, monom1.Rank });
+				output->insert({ monom1.Ratio - monom2.Ratio, monom1.Rank, monom1.variable });
 				break;
 			}
 		}
 	}
 
+	// В результирующий полином добавляются не пересекающиеся мономы
 	output->insert(setDifference1.begin(), setDifference1.end());
 	output->insert(setDifference2.begin(), setDifference2.end());
 
 	return  output;
 }
 
-ptrPolinom MultiPol(ptrPolinom pol1, ptrPolinom pol2) {
+/// <summary>
+/// Произведение полиномов
+/// </summary>
+/// <param name="pol1"></param>
+/// <param name="pol2"></param>
+/// <returns></returns>
+ptrPolinom MultiPol(const ptrPolinom pol1, const ptrPolinom pol2) {
 
-	ptrPolinom resMulti = new Polinom();
-	ptrPolinom tmp = nullptr;				// Указатель на новую сумму, для очистки суммы предыдущей итерации 
-	ptrPolinom sum = nullptr;
+	ptrPolinom resMulti = new Polinom(),
+			   tmp = nullptr,				// Указатель на новую сумму, для очистки суммы предыдущей итерации 
+			   sum = nullptr;
 	string variable = "";
 	int step(0);
 
@@ -71,7 +93,7 @@ ptrPolinom MultiPol(ptrPolinom pol1, ptrPolinom pol2) {
 			if (monom1.Ratio != 0 && monom2.Ratio != 0)
 				variable = monom1.variable == monom2.variable ? monom2.variable : monom1.variable + monom2.variable;
 
-			resMulti->insert({ monom1.Ratio * monom2.Ratio, monom1.Rank + monom2.Rank });
+			resMulti->insert({ monom1.Ratio * monom2.Ratio, monom1.Rank + monom2.Rank, variable});
 		}
 
 		if (sum != nullptr) {
@@ -97,6 +119,8 @@ ptrPolinom Calc(stack <tuple<byte, string, char, string>>* Tasks) {
 	if (Tasks == nullptr)
 		return nullptr;
 
+	cout << "\n\n ==========================  Вычисления ========================== \n";
+
 	while (Tasks->size() != 0) {
 
 		auto Task = Tasks->top();
@@ -121,13 +145,13 @@ ptrPolinom Calc(stack <tuple<byte, string, char, string>>* Tasks) {
 		#pragma endregion
 
 
-		cout << "\n Вычисление: \n\t";
-		if(get<Pol1>(Task) != "")
-			cout << get<Pol1>(Task) << " " << get<Operator>(Task) << " " << get<Pol2>(Task);
+		cout << "\n\n Вычисление: \t";
+		if (get<Pol1>(Task) != "")
+			PrintPolinoms(get<Pol1>(Task), get<Operator>(Task), get<Pol2>(Task));
 		else if(resTask != nullptr && get<Pol1>(Task) != "")
-			cout << get<Pol1>(Task) << " " << get<Operator>(Task) << " " << resTask;
+			PrintPolinoms(get<Pol1>(Task), get<Operator>(Task), *resTask);
 		else if(resTask != nullptr && get<Pol2>(Task) != "")
-			cout << resTask << " " << get<Operator>(Task) << " " << get<Pol2>(Task);
+			PrintPolinoms(*resTask, get<Operator>(Task), get<Pol2>(Task));
 			
 
 		switch (get<Operator>(Task))
@@ -152,7 +176,7 @@ ptrPolinom Calc(stack <tuple<byte, string, char, string>>* Tasks) {
 			break;
 		}
 
-		cout << "\n Результат: " << (*resTask);
+		cout << "\n Результат: " << *resTask;
 
 		Tasks->pop();
 	}
