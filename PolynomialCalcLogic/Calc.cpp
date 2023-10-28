@@ -146,12 +146,14 @@ ptrPolinom Calc(stack <tuple<byte, string, char, string>>* Tasks) {
 
 
 		cout << "\n\n Вычисление: \t";
-		if (get<Pol1>(Task) != "")
-			PrintPolinoms(get<Pol1>(Task), get<Operator>(Task), get<Pol2>(Task));
-		else if(resTask != nullptr && get<Pol1>(Task) != "")
-			PrintPolinoms(get<Pol1>(Task), get<Operator>(Task), *resTask);
-		else if(resTask != nullptr && get<Pol2>(Task) != "")
-			PrintPolinoms(*resTask, get<Operator>(Task), get<Pol2>(Task));
+ 		PrintPolinoms(*vPol1, get<Operator>(Task) ,*vPol2);
+
+		//if(get<Pol1>(Task) != "")
+		//	cout << "(" << get<Pol1>(Task) << ") " << get<Operator>(Task) << " (" << get<Pol2>(Task) << ")";
+		//else if(resTask != nullptr && get<Pol1>(Task) != "")
+		//	cout << "(" << get<Pol1>(Task) << ") " << get<Operator>(Task) << " (" << *resTask << ")";
+		//else if(resTask != nullptr && get<Pol2>(Task) != "")
+		//	cout << "(" << *resTask << ") " << get<Operator>(Task) << " (" << get<Pol2>(Task) << ")";
 			
 
 		switch (get<Operator>(Task))

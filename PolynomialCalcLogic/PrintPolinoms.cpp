@@ -14,18 +14,15 @@ using namespace std;
 std::ostream& operator<< (std::ostream& stream, const Monom& monom) {
 
 	if (monom.Ratio != 0) {
-		if (monom.Ratio < 0)
-			stream << "- ";
-		else
-			stream << "+ ";
-
-		if (monom.Ratio > 0)
+		if (monom.Ratio > 1 || monom.Ratio < 0 || monom.Rank == 0)
 			stream << monom.Ratio;
 
-		if (monom.Rank > 0) {
+		if (monom.Rank > 1) {
 			stream << monom.variable << "^" << monom.Rank;
 		}
-		else stream << " ";
+		else if (monom.Rank == 1) {
+			stream << monom.variable;
+		}
 	}
 
 	return stream;
@@ -42,16 +39,22 @@ std::ostream& operator<< (std::ostream& stream, const Polinom& polinom) {
 	if (!polinom.empty()) {
 		
 		// Вывод первого монома
-		Monom monom = *polinom.begin();
-		if (monom.Ratio < 0)
-			stream << "-";
-		if (monom.Rank > 0) {
-			stream << monom.variable << "^" << monom.Rank;
-		}
+		auto monom = polinom.begin();
+
+		cout << *monom;
+
+		//if (monom->Ratio != 1 || monom->Rank == 0)
+		//	stream << monom->Ratio;
+		//if (monom->Rank > 1) {
+		//	stream << monom->variable << "^";
+		//}
+		//else if (monom->Rank == 1) {
+		//	stream << monom->variable;
+		//}		
 
 		// Вывод последующих мономов
-		for (Monom monom : polinom) {
-			stream << monom;
+		while (++monom != polinom.end()) {
+			stream << " + " << *(monom);
 		}
 	}
 
@@ -63,7 +66,7 @@ std::ostream& operator<< (std::ostream& stream, const Polinom& polinom) {
 /// </summary>
 /// <param name="pol"></param>
 void PrintPolinoms(const Polinom& pol, const char operation, const Polinom &pol2) {
-	cout << "(" << pol << ") " << operation << " (" << pol << ")";
+	cout << "(" << pol << ") " << operation << " (" << pol2 << ")";
 }
 
 

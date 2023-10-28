@@ -16,7 +16,7 @@ std::vector<string> ParseMonoms(string sPolinom) {
 	int pos(0), numPolinom(0);
 	string value, lastValue;
 
-	cout << "\n Распознование мономов:  ";
+	cout << "\n\n Распознование мономов:  ";
 
 	// Парсинг введенной строки с разбиеним в список по мономам
 	do {
@@ -43,7 +43,6 @@ std::vector<string> ParseMonoms(string sPolinom) {
 		if (ptr != list.end())
 			cout << ", ";
 	}
-	cout << "\n";
 
 	return list;
 }
@@ -83,7 +82,7 @@ ptrPolinom CreatePolinom(std::vector<string> LMonoms) {
 						else if (!isVariable) {
 							isVariable = true;
 							variable = ch;
-							if (value == "" || value == "-" ) value += "1";
+							if (value == "" || value == "-") value += "1";
 							rank = 1;
 						}
 						else if (variable[0] != ch)
