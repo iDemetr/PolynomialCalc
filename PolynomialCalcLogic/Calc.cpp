@@ -108,6 +108,39 @@ ptrPolinom MultiPol(const ptrPolinom pol1, const ptrPolinom pol2) {
 	return sum;
 }
 
+/// <summary>
+/// Вычисляет отношение двух полиномов
+/// </summary>
+/// <param name="pol1"></param>
+/// <param name="pol2"></param>
+/// <returns></returns>
+ptrPolinom DivisionPol(const ptrPolinom pol1, const ptrPolinom pol2) {
+	ptrPolinom resMulti = new Polinom(),
+		tmp = nullptr,				// Указатель на новую сумму, для очистки суммы предыдущей итерации 
+		sum = nullptr;
+	string variable = "";
+	int step(0);
+
+	for (Monom monom1 : (*pol1)) {
+		for (Monom monom2 : (*pol2)) {
+			if (monom1.Ratio != 0 && monom2.Ratio != 0)
+				variable = monom1.variable == monom2.variable ? monom2.variable : monom1.variable + monom2.variable;
+
+			resMulti->insert({ monom1.Ratio * monom2.Ratio, monom1.Rank + monom2.Rank, variable });
+		}
+
+		if (sum != nullptr) {
+			tmp = SumPol(sum, resMulti);
+			delete sum;
+			sum = tmp;
+		}
+		else { sum = resMulti; }
+		resMulti = new Polinom();
+	}
+
+	return sum;
+}
+
 #pragma endregion
 
 ptrPolinom CulcSwitch(ptrPolinom, char, ptrPolinom);
@@ -194,6 +227,8 @@ ptrPolinom Calc(Tasks* tasks) {
 		tasks->pop();
 	}
 
+	cout << "\n\n =====================  Вычисления завершены ===================== \n";
+
 	return resTask;
 }
 
@@ -226,7 +261,7 @@ ptrPolinom CulcSwitch(ptrPolinom pol1, char operation, ptrPolinom pol2) {
 		break;
 
 	case division:
-		//resTask = SumPol(vPol1, vPol2);
+		//resTask = DivisionPol(pol1, pol2);
 		break;
 
 	default:
