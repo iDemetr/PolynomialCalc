@@ -1,5 +1,6 @@
 #pragma once
 
+#include "pch.h"
 #include "Header.h"
 
 using namespace std;
@@ -66,9 +67,9 @@ Tasks* CreateTasks(string sPolinom) {
 
 					// Пропуск обработки, если скобки закрылись для группы
 					if ((skob.size() > 1 || task->size() > 1) && !isOperation) {
-						skob.pop();
+ 						skob.pop();
 						isGroup = true;			// Установка флага об окончании группы для логики степени
-						isEndPolinom = false;
+						//isEndPolinom = false;
 						continue;
 					}
 
@@ -101,6 +102,7 @@ Tasks* CreateTasks(string sPolinom) {
 			}
 			
 			default:
+				// Если был встречен конец полинома или слоя
 				if (isEndPolinom) {
 					// Добавление нового полинома с последовательным приоритетом действий
 					if (ch == addition || ch == subtraction) {
@@ -143,7 +145,7 @@ Tasks* CreateTasks(string sPolinom) {
 					}
 
 					// Ввод операций повышенного приоритета
-					if (ch == multiplication || ch == division) {
+					else if (ch == multiplication || ch == division) {
 
 						isEndPolinom = false;
 						isLowPriority = !(isHightPriority = ch == multiplication);
@@ -169,7 +171,7 @@ Tasks* CreateTasks(string sPolinom) {
 					}
 
 					// Ввод степени
-					if (ch == poww) {
+					else if (ch == poww) {
 						//isEndPolinom = false;
 
 						// Если в степнь возводится 1 полином
@@ -185,6 +187,10 @@ Tasks* CreateTasks(string sPolinom) {
 
 					}
 				}
+				
+				//if (isGroup) {
+				//
+				//}
 				break;
 			}
 		}
@@ -209,8 +215,10 @@ void readPow(int& iter, string sPolinom, Tasks* task) {
 	while (ch != ' ') {
 		if (ch > '0' && ch < '9')
 			iPow += ch;
-		else if (ch == ')')
+		else if (ch == ')') {
+			iter--;
 			break;
+		}
 		else
 			throw new exception("Неверная запись степени, встречен невалидный символ");
 				

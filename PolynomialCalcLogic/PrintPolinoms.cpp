@@ -1,5 +1,6 @@
 #pragma once
 
+#include "pch.h"
 #include "Header.h"
 
 using namespace std;
@@ -41,7 +42,7 @@ std::ostream& operator<< (std::ostream& stream, const Polinom& polinom) {
 		// Вывод первого монома
 		auto monom = polinom.begin();
 
-		cout << *monom;
+		stream << *monom;
 
 		//if (monom->Ratio != 1 || monom->Rank == 0)
 		//	stream << monom->Ratio;
@@ -54,7 +55,7 @@ std::ostream& operator<< (std::ostream& stream, const Polinom& polinom) {
 
 		// Вывод последующих мономов
 		while (++monom != polinom.end()) {
-			stream << " + " << *(monom);
+			stream << " + " << *monom;
 		}
 	}
 

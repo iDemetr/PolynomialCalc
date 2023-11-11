@@ -3,17 +3,6 @@
 #ifndef HEADER_H
 #define HEADER_H
 
-#include <conio.h>
-#include <string>
-#include <iostream>
-#include <fstream>		
-#include <windows.h>
-
-#include <vector>
-#include <stack>
-#include <tuple>
-#include <set>
-
 enum command { poww = '^', multiplication = '*', division = '/', addition = '+', subtraction = '-' };
 
 // Интерфейс для доступа к кортежу с задачей, где:

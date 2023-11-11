@@ -1,5 +1,6 @@
 #pragma once
 
+#include "pch.h"
 #include "Header.h"
 #include "ParsePolinoms.h"
 #include "PrintPolinoms.h"
@@ -28,7 +29,7 @@ ptrPolinom SumPol(const ptrPolinom p1, const ptrPolinom p2) {
 
 	for (Monom monom1 : *p1) {
 		for (Monom monom2 : *p2) {
-			if (monom1 == monom2) {
+			if (monom1 == monom2 && monom1.Ratio + monom2.Ratio != 0) {
 				output->insert({ monom1.Ratio + monom2.Ratio, monom1.Rank, monom1.variable });
 				break;
 			}
@@ -38,6 +39,17 @@ ptrPolinom SumPol(const ptrPolinom p1, const ptrPolinom p2) {
 	// В результирующий полином добавляются не пересекающиеся мономы
 	output->insert(setDifference1.begin(), setDifference1.end());
 	output->insert(setDifference2.begin(), setDifference2.end());
+
+	//vector<Monom> dellList;
+	//for (auto a : *output) {
+	//	if (a.Ratio == 0) {
+	//		dellList.push_back(a);
+	//	}
+	//}
+	//
+	//for (auto del : dellList) {
+	//	output->erase(del);
+	//}
 
 	return  output;
 }
@@ -70,6 +82,12 @@ ptrPolinom SubtractPol(const ptrPolinom p1, const ptrPolinom p2) {
 	// В результирующий полином добавляются не пересекающиеся мономы
 	output->insert(setDifference1.begin(), setDifference1.end());
 	output->insert(setDifference2.begin(), setDifference2.end());
+
+	for (auto a : *output) {
+		if (a.Ratio == 0) {
+			output->erase(a);
+		}
+	}
 
 	return  output;
 }
@@ -183,7 +201,7 @@ ptrPolinom Calc(Tasks* tasks) {
 			if (resTask != nullptr) {
 				buffer.push({ get<Layer>(taskLast),get<Operator>(taskLast), resTask });
 				cout << "\n Буферизация: ";
-				cout << "\n Приоритет: " << get<Layer>(taskLast) << " Промежуточный результат на слое: " << resTask;
+				cout << "\n Приоритет: " << (int)get<Layer>(taskLast) << " Промежуточный результат на слое: " << *resTask;
 			}
 		}
 		// Если новая задача ниже по слою - выполнить все операции из буфера с прежним слоем и аналогичного
@@ -292,6 +310,10 @@ ptrPolinom CompleteBuff(BYTE layer, Buffer& buffer, ptrPolinom pol1, bool flag =
 	while (((buff->layer == layer && !flag) || (buff->layer >= layer && flag)) && !buffer.empty()) {
 		pol1 = CulcSwitch(pol1, buff->operation, buff->polinom);
 		buffer.pop();
+		if (!buffer.empty())
+			buff = &buffer.top();
+		else
+			break;
 	}
 
 	return pol1;
