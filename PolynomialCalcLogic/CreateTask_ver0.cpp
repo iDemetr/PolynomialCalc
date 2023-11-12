@@ -5,7 +5,8 @@
 
 using namespace std;
 
-void readPow(int&, string, Tasks*);
+int readPow(int&, const string&);
+void ReadPow(int&, const string&, Tasks*);
 string invertPolynom(string);
 
 /// <summary>
@@ -176,13 +177,14 @@ Tasks* CreateTasks(string sPolinom) {
 
 						// ≈сли в степнь возводитс€ 1 полином
 						if (!isGroup) {
-							readPow(i, sPolinom, task);
+							ReadPow(i, sPolinom, task);
 							isHightPriority = true;
 						}
 
 						// ¬ степень возводитс€ группа полиномов 
 						else if (isGroup) {
-
+							task->push({ skob.size(), "", ch, std::to_string(readPow(i,sPolinom))});
+							isHightPriority = true;
 						}
 
 					}
@@ -203,34 +205,39 @@ Tasks* CreateTasks(string sPolinom) {
 }
 
 /// <summary>
-/// ќбрабатывает встреченный знак степени и формирует n-задач
+/// ќбрабатывает встреченный знак степени
 /// </summary>
 /// <param name="iter"></param>
 /// <param name="sPolinom"></param>
-/// <param name="task"></param>
-void readPow(int& iter, string sPolinom, Tasks* task) {
+int readPow(int& iter, const string &sPolinom) {
 
 	string iPow;
 	char ch = sPolinom[++iter];
-	while (ch != ' ') {
-		if (ch > '0' && ch < '9')
-			iPow += ch;
+
+	do {
+		if (ch > '0' && ch < '9') iPow += ch;
 		else if (ch == ')') {
-			iter--;
-			break;
+			iter--; break;
 		}
 		else
 			throw new exception("Ќеверна€ запись степени, встречен невалидный символ");
 				
+	} while (++iter < sPolinom.length(), ch = sPolinom[iter], ch != ' ');
 
-		if (++iter < sPolinom.length())
-			ch = sPolinom[iter];
-		else
-			break;
-	}
+	return stoi(iPow);
+}
+
+/// <summary>
+/// ‘ормирует n-стек задач перемножени€ полинома в степени
+/// </summary>
+/// <param name="iter"></param>
+/// <param name="sPolinom"></param>
+/// <param name="task"></param>
+void ReadPow(int& iter, const string &sPolinom, Tasks* task) {
 
 	string FindPolinom;
 	int i(0);
+	int pow = readPow(iter, sPolinom);
 
 	// ≈сли считан первый полином на слое
 	if (get<Operator>(task->top()) == noOperator) {
@@ -242,10 +249,10 @@ void readPow(int& iter, string sPolinom, Tasks* task) {
 		FindPolinom = get<Pol2>(task->top());
 		get<Pol2>(task->top()) = "";
 	}
-	
+
 	int layer = get<Layer>(task->top()) + 1;
 	// ѕлодитс€ стек задач по перемножению полинома на 1 раз меньше
-	for (; i < stoi(iPow) - 1; i++) {
+	for (; i < pow - 1; i++) {
 		task->push({ layer, FindPolinom, multiplication , "" });
 	}
 

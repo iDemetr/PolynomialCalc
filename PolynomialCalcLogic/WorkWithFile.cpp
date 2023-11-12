@@ -85,7 +85,7 @@ vector <std::pair<std::string, std::string>> ReadHistory() {
 	for(auto var : history)
 	{ 
 		cout << "\n-------------------------------------------------------------";
-		cout << "\n Номер: " << i;
+		cout << "\n Номер: " << i++;
 		cout << "\n Пример: " << var.first;
 		cout << "\n Результат: " << var.second;
 		cout << "\n-------------------------------------------------------------";

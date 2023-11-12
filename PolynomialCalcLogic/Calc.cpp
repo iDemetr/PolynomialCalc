@@ -40,17 +40,6 @@ ptrPolinom SumPol(const ptrPolinom p1, const ptrPolinom p2) {
 	output->insert(setDifference1.begin(), setDifference1.end());
 	output->insert(setDifference2.begin(), setDifference2.end());
 
-	//vector<Monom> dellList;
-	//for (auto a : *output) {
-	//	if (a.Ratio == 0) {
-	//		dellList.push_back(a);
-	//	}
-	//}
-	//
-	//for (auto del : dellList) {
-	//	output->erase(del);
-	//}
-
 	return  output;
 }
 
@@ -159,6 +148,21 @@ ptrPolinom DivisionPol(const ptrPolinom pol1, const ptrPolinom pol2) {
 	return sum;
 }
 
+ptrPolinom PowPol(const ptrPolinom pol1, const ptrPolinom pol2) {
+
+	// Получение степени
+	int pow = (*(pol2->begin())).Ratio;
+
+	ptrPolinom resPow = pol1;
+
+	for (size_t i = 1; i < pow; i++)
+	{
+		resPow = MultiPol(resPow, pol1);
+	}
+
+	return resPow;
+}
+
 #pragma endregion
 
 ptrPolinom CulcSwitch(ptrPolinom, char, ptrPolinom);
@@ -234,9 +238,6 @@ ptrPolinom Calc(Tasks* tasks) {
 			continue;
 		}
 
-		// Здесь известна проблема - если есть запись вида: (p3) + (p2)*(p1) + (p0) или (p4) + (p3)*(p2)*(p1) + (p0)
-		// то будет потеря p0. Необходимо его записывать в буфер.
-
 		#pragma endregion
 
 		resTask = CulcSwitch(vPol1, get<Operator>(*task), vPol2);
@@ -282,6 +283,10 @@ ptrPolinom CulcSwitch(ptrPolinom pol1, char operation, ptrPolinom pol2) {
 		//resTask = DivisionPol(pol1, pol2);
 		break;
 
+	case poww:
+		resTask = PowPol(pol1, pol2);
+		break;
+
 	default:
 		break;
 	}
@@ -300,9 +305,6 @@ ptrPolinom CulcSwitch(ptrPolinom pol1, char operation, ptrPolinom pol2) {
 ptrPolinom CompleteBuff(BYTE layer, Buffer& buffer, ptrPolinom pol1, bool flag = false) {
 
 	auto buff = &buffer.top();
-
-	/*if (flag)
-		layer += 1;*/
 
 	if (buff->layer > layer && !flag)
 		throw exception("Нарушение последовательности выполнения действий!");
