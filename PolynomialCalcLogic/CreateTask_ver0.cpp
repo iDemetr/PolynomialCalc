@@ -26,8 +26,6 @@ Tasks* CreateTasks(string sPolinom) {
 	char ch;
 	string FindPolinom;
 
-	cout << "\n ‘ормирование последовательности действий...";
-
 	try {
 		for (int i = 0; i < sPolinom.length(); i++) {
 

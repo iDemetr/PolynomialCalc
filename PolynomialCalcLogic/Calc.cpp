@@ -299,6 +299,7 @@ ptrPolinom Calc(Tasks* tasks) {
 	}
 
 	cout << "\n\n =====================  Вычисления завершены ===================== \n";
+	cout << "\n Результат:  " << *resTask << endl << endl;
 
 	return resTask;
 }

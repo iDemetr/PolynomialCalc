@@ -7,6 +7,8 @@
 
 using namespace std;
 
+int ReadNumHist();
+
 int main()
 {
 	SetConsoleCP(1251);
@@ -81,9 +83,11 @@ int main()
 
 			auto History = ReadHistory();
 			int num;
-			while (num = _getch() - '0', (num < 1 || num > History.size()) && num != -21);
+			while (num = ReadNumHist(), (num < 1 || num > History.size()) && num != -21);
 
 			if (num != -21) {
+				std::cout << "\n Выбран пример №" << num << ".";
+				std::cout << "\n Расчёты: " << History[num - 1].first << ".";
 				spolinom = History[num - 1].first;
 				tasks = CreateTasks(spolinom);
 				Calc(tasks);
@@ -122,5 +126,23 @@ int main()
 
 }
 
+
+int ReadNumHist() {
+
+	bool isRepit = true;
+	int menu;
+	string buff = "";
+	do {
+		getline(cin,buff);
+		try {
+			menu = std::stoi(buff);
+			isRepit = false;
+		}
+		catch (exception &e) {}
+		
+	} while (isRepit);
+
+	return menu;
+}
 
 
