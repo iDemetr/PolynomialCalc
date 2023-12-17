@@ -15,6 +15,7 @@
 #include <fstream>		
 #include <windows.h>
 
+#include <array>
 #include <vector>
 #include <stack>
 #include <tuple>

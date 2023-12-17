@@ -116,38 +116,86 @@ ptrPolinom MultiPol(const ptrPolinom pol1, const ptrPolinom pol2) {
 }
 
 /// <summary>
-/// Вычисляет отношение двух полиномов
+/// Вычисляет отношение двух полиномов методом Горнера с остатком
+/// </summary>
+/// <param name="pol1">Делимое</param>
+/// <param name="pol2">Делитель</param>
+/// <returns></returns>
+ptrPolinom DivisionPol(const ptrPolinom pol1, const ptrPolinom pol2) {
+
+	Monom HightMonom;
+	vector<Monom> divisible;	
+
+	if ((*(pol1->begin())).Rank != 0) {
+		int rank = 0;
+		// Заполнение нулевыми мономами с начала, если минимальный ранг не равен 0.
+		while (rank != (*(pol1->begin())).Rank ) {
+			divisible.push_back(Monom(0, rank++));
+		}
+	}
+
+	// Заполнение Полного списка мономов делимого полинома, включая мономы с коэффициентами 0
+	for (auto x = pol1->begin(); x != pol1->end(); ++x) {
+		if (divisible.empty()) {
+			divisible.push_back(*x);
+			//x++;
+		}
+		else if ((*x).Rank - 1 == divisible.back().Rank) {
+			divisible.push_back(*x);			
+		}
+		else {
+			while (divisible.back().Rank + 1 != (*x).Rank) {
+				divisible.push_back(Monom(0, divisible.back().Rank+1));
+			}
+			divisible.push_back(*x);
+		}
+		HightMonom = *x;
+	}
+
+	int Spine = 0;						// Коэфициент делителя.
+	for (auto x : *pol2) {				// Получение младшего монома для получения коэфициенты делителя
+		Spine = -x.Ratio;
+		break;
+	}
+
+	int last = 0;
+	vector<int> TableGorner;
+
+	// Вычисление таблицы Горнера, начиная со старшего ранга
+	for (auto monom = divisible.rbegin(); monom != divisible.rend(); monom++) {
+		TableGorner.push_back((*monom).Ratio + last * Spine);
+		last = TableGorner.back();
+	}
+
+	int Rank = HightMonom.Rank - 1;
+	// Преобразование массива коэфициентов результирующего полинома в объект полинома
+	ptrPolinom result = new Polinom();
+	for (auto x : TableGorner) {
+		if (x != 0) {
+			if (Rank < 0) {
+				result->insert({x,Rank--,ToString(*pol2)});
+			}
+			else
+				result->insert({x,Rank--,HightMonom.variable});
+		}
+	}
+
+	if (last == 0) {
+		cout << "\n Деление без остатка.";
+	}
+	else {
+		cout << "\n Остаток от деления: " << last;	
+	}
+
+	return result;
+}
+
+/// <summary>
+/// Вычисление степени
 /// </summary>
 /// <param name="pol1"></param>
 /// <param name="pol2"></param>
 /// <returns></returns>
-ptrPolinom DivisionPol(const ptrPolinom pol1, const ptrPolinom pol2) {
-	ptrPolinom resMulti = new Polinom(),
-		tmp = nullptr,				// Указатель на новую сумму, для очистки суммы предыдущей итерации 
-		sum = nullptr;
-	string variable = "";
-	int step(0);
-
-	for (Monom monom1 : (*pol1)) {
-		for (Monom monom2 : (*pol2)) {
-			if (monom1.Ratio != 0 && monom2.Ratio != 0)
-				variable = monom1.variable == monom2.variable ? monom2.variable : monom1.variable + monom2.variable;
-
-			resMulti->insert({ monom1.Ratio * monom2.Ratio, monom1.Rank + monom2.Rank, variable });
-		}
-
-		if (sum != nullptr) {
-			tmp = SumPol(sum, resMulti);
-			delete sum;
-			sum = tmp;
-		}
-		else { sum = resMulti; }
-		resMulti = new Polinom();
-	}
-
-	return sum;
-}
-
 ptrPolinom PowPol(const ptrPolinom pol1, const ptrPolinom pol2) {
 
 	// Получение степени
@@ -155,8 +203,7 @@ ptrPolinom PowPol(const ptrPolinom pol1, const ptrPolinom pol2) {
 
 	ptrPolinom resPow = pol1;
 
-	for (size_t i = 1; i < pow; i++)
-	{
+	for (size_t i = 1; i < pow; i++) {
 		resPow = MultiPol(resPow, pol1);
 	}
 
@@ -164,6 +211,7 @@ ptrPolinom PowPol(const ptrPolinom pol1, const ptrPolinom pol2) {
 }
 
 #pragma endregion
+
 
 ptrPolinom CulcSwitch(ptrPolinom, char, ptrPolinom);
 ptrPolinom CompleteBuff(BYTE, Buffer&, ptrPolinom, bool);
@@ -184,10 +232,14 @@ ptrPolinom Calc(Tasks* tasks) {
 	if (tasks == nullptr)
 		return nullptr;
 
+	// Предикат - является-ли текущая задача произведением с вторым операндом повышенного приоритета, 
+	// который требует вычисления в первую очередь и буферизации результатов на текущем слое
 	auto isMulti = [](Task* task) {
 		return (get<Operator>(*task) == '*' && get<Pol1>(*task) != "" && get<Pol2>(*task) != "");
 		};
 
+	// Предикат - является-ли текущая задача суммой с вторым операндом повышенного приоритета, 
+	// который требует вычисления в первую очередь и буферизации результатов на текущем слое
 	auto isSum = [](Task* task) {
 		return (get<Operator>(*task) == '+' && get<Pol2>(*task) == "");
 		};
@@ -198,7 +250,7 @@ ptrPolinom Calc(Tasks* tasks) {
 
 		task = &tasks->top();
 
-		#pragma region --- Буферизация ---
+		#pragma region --- Буферизация при переходе на новый слой или вычислении степени ---
 
 		// Запись результата прошлого слоя в буфер.
 		if (get<Layer>(*task) > get<Layer>(taskLast) || isMulti(task)) {	//
@@ -280,7 +332,7 @@ ptrPolinom CulcSwitch(ptrPolinom pol1, char operation, ptrPolinom pol2) {
 		break;
 
 	case division:
-		//resTask = DivisionPol(pol1, pol2);
+		resTask = DivisionPol(pol1, pol2);
 		break;
 
 	case poww:

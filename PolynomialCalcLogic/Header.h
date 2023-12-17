@@ -32,8 +32,12 @@ struct Monom {
 	// Аргумент
 	std::string variable = "";
 
-    bool operator<(const Monom& monom) const
-    {
+	//Monom(int ratio, int rank) {
+	//	Ratio = ratio;
+	//	Rank = rank;
+	//}
+
+    bool operator<(const Monom& monom) const {
         return Rank < monom.Rank;
     }
 

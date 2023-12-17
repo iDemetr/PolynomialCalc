@@ -6,7 +6,7 @@
 using namespace std;
 
 int readPow(int&, const string&);
-void ReadPow(int&, const string&, Tasks*);
+void AddTaskPow(int&, const string&, Tasks*);
 string invertPolynom(string);
 
 /// <summary>
@@ -28,7 +28,6 @@ Tasks* CreateTasks(string sPolinom) {
 
 	cout << "\n Формирование последовательности действий...";
 
-	// Добавить проверку, есть ли вообще скобки, мб ввелся только 1 полином
 	try {
 		for (int i = 0; i < sPolinom.length(); i++) {
 
@@ -177,7 +176,7 @@ Tasks* CreateTasks(string sPolinom) {
 
 						// Если в степнь возводится 1 полином
 						if (!isGroup) {
-							ReadPow(i, sPolinom, task);
+							AddTaskPow(i, sPolinom, task);
 							isHightPriority = true;
 						}
 
@@ -228,12 +227,12 @@ int readPow(int& iter, const string &sPolinom) {
 }
 
 /// <summary>
-/// Формирует n-стек задач перемножения полинома в степени
+/// Добавляет n-стек задач перемножения полинома в степени
 /// </summary>
 /// <param name="iter"></param>
 /// <param name="sPolinom"></param>
 /// <param name="task"></param>
-void ReadPow(int& iter, const string &sPolinom, Tasks* task) {
+void AddTaskPow(int& iter, const string &sPolinom, Tasks* task) {
 
 	string FindPolinom;
 	int i(0);

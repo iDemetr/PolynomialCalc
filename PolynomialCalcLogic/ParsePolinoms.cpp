@@ -6,18 +6,12 @@
 
 using namespace std;
 
-
-/// <summary>
-/// Парсит полином на список мономов
-/// </summary>
-/// <param name="sPolinom"></param>
-/// <returns></returns>
 std::vector<string> ParseMonoms(string sPolinom) {
 	std::vector<string> list;
 	int pos(0), numPolinom(0);
 	string value, lastValue;
 
-	cout << "\n\n Распознование мономов:  ";
+	cout << "\n\n Распознавание мономов:  ";
 
 	// Парсинг введенной строки с разбиеним в список по мономам
 	do {
@@ -48,12 +42,6 @@ std::vector<string> ParseMonoms(string sPolinom) {
 	return list;
 }
 
-/// <summary>
-/// Преобразует список мономов в матрицу
-/// Добавить поддержку многопараметрических полиномов
-/// </summary>
-/// <param name="LMonoms"></param>
-/// <returns></returns>
 ptrPolinom CreatePolinom(std::vector<string> LMonoms) {
 
 	string variable = "";
