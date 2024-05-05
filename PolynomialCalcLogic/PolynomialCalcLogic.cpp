@@ -22,7 +22,7 @@ int main()
 
 	//#define NDEBUG
 
-#ifndef NDEBUG
+#ifndef DEBUG
 
 	_getch(); system("cls");
 
@@ -43,11 +43,19 @@ int main()
 		case menu::ReadTask: {
 			cout << "\n Введите полином: ";
 			getline(cin, spolinom);
+			if (spolinom == "esc" || spolinom == "")
+				break;
 
-			tasks = CreateTasks(spolinom);
-			auto result = Calc(tasks);
+			try {
+				tasks = CreateTasks(spolinom);
+				auto result = Calc(tasks);
 
-			SaveHistory(spolinom, result);
+				SaveHistory(spolinom, result);
+			}
+			catch (const std::exception* e) {
+				std::cout << e->what();
+			}
+			catch (...){}
 			break;
 		}
 
@@ -58,21 +66,30 @@ int main()
 			cout << "\n         делимое - полином любого порядка ";
 			bool flag = true;
 			do {
-				cout << "\n Введите полином: ";
+				cout << "\n Введите полином: ";				
 				getline(cin, spolinom);
+				if (spolinom == "esc" || spolinom == "")
+					break;
 
-				tasks = CreateTasks(spolinom);
+				try {
+					tasks = CreateTasks(spolinom);
 
-				if (tasks->size() > 1) {
-					cout << "\n Ввёденный полином содержит больше одной операции.";
-					cout << "\n Выбранный режим пользволяет осуществить только деление между двумя полиномами.";
-					continue;
+					if (tasks->size() > 1) {
+						cout << "\n Ввёденный полином содержит больше одной операции.";
+						cout << "\n Выбранный режим пользволяет осуществить только деление между двумя полиномами.";
+						continue;
+					}
+					else {
+						flag = false;
+						auto result = Calc(tasks);
+						SaveHistory(spolinom, result);
+					}
 				}
-				else {
-					flag = false;
-					auto result = Calc(tasks);
-					SaveHistory(spolinom, result);
+				catch (const std::exception* e) {
+					std::cout << e->what();					
 				}
+				catch (...) { break; }
+
 			} while (flag);
 			break;
 		}
@@ -82,15 +99,20 @@ int main()
 			cout << "\n Выберите номер задачи для повторного ввода: ";
 
 			auto History = ReadHistory();
-			int num;
-			while (num = ReadNumHist(), (num < 1 || num > History.size()) && num != -21);
+			if (History.size() != 0) {
+				int num;
+				while (num = ReadNumHist(), (num < 1 || num > History.size()) && num != -1);
 
-			if (num != -21) {
-				std::cout << "\n Выбран пример №" << num << ".";
-				std::cout << "\n Расчёты: " << History[num - 1].first << ".";
-				spolinom = History[num - 1].first;
-				tasks = CreateTasks(spolinom);
-				Calc(tasks);
+				if (num != -1) {
+					std::cout << "\n Выбран пример №" << num << ".";
+					std::cout << "\n Расчёты: " << History[num - 1].first << ".";
+					spolinom = History[num - 1].first;
+					tasks = CreateTasks(spolinom);
+					Calc(tasks);
+				}
+			}
+			else {
+				std::cout << "\n Файл истории пуст.";
 			}
 			break;
 		}
@@ -121,25 +143,30 @@ int main()
 
 #endif // _DEBUG
 
-
-
-
 }
 
-
+/// <summary>
+/// Считывает номер предложения
+/// </summary>
+/// <returns></returns>
 int ReadNumHist() {
 
 	bool isRepit = true;
 	int menu;
 	string buff = "";
 	do {
-		getline(cin,buff);
+		getline(cin, buff);
+		if (buff == "esc" || buff == "") {
+			return -1;
+			break;
+		}
+
 		try {
 			menu = std::stoi(buff);
 			isRepit = false;
 		}
-		catch (exception &e) {}
-		
+		catch (exception& e) {}
+
 	} while (isRepit);
 
 	return menu;

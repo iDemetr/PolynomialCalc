@@ -9,12 +9,8 @@ int readPow(int&, const string&);
 void AddTaskPow(int&, const string&, Tasks*);
 string invertPolynom(string);
 
-/// <summary>
-/// Разбиение строки с полиномами на последовательность действий.
-/// </summary>
-/// <param name="sPolinom"></param>
+
 Tasks* CreateTasks(string sPolinom) {
-	//vector<vector<int>*>* polinoms = new vector<vector<int>*>();				// Список матриц полиномов
 
 	stack<int> skob;															// стек открытых скобок
 
@@ -95,7 +91,7 @@ Tasks* CreateTasks(string sPolinom) {
 
 					isOperation = false;
 				}
-				else throw exception("Ошибка в записи полинома.");
+				else throw new exception("\n Ошибка в записи полинома.\n");
 				break;
 			}
 			
@@ -187,16 +183,21 @@ Tasks* CreateTasks(string sPolinom) {
 					}
 				}
 				
-				//if (isGroup) {
-				//
-				//}
 				break;
 			}
 		}
+
+		if (get<Pol2>(task->top()) == "") {
+			throw new exception("\n Введён только один полином, ожидался ввод как минимум пары полиномов с мат. оператором.\n");
+		}
 	}
+	
 	catch (const std::exception& e) {
 		cout << "\n\t Error: " << e.what() << endl;
+		throw;
 	}
+	
+	catch (...) { throw; }
 
 	return task;
 }
@@ -209,17 +210,19 @@ Tasks* CreateTasks(string sPolinom) {
 int readPow(int& iter, const string &sPolinom) {
 
 	string iPow;
-	char ch = sPolinom[++iter];
-
+	char ch;
+	iter++;
 	do {
+		ch = sPolinom[iter];
+
 		if (ch > '0' && ch < '9') iPow += ch;
 		else if (ch == ')') {
 			iter--; break;
 		}
 		else
-			throw new exception("Неверная запись степени, встречен невалидный символ");
+			throw new exception("\n Неверная запись степени, встречен невалидный символ.\n");
 				
-	} while (++iter < sPolinom.length(), ch = sPolinom[iter], ch != ' ');
+	} while (++iter < sPolinom.length() && ch != ' ');
 
 	return stoi(iPow);
 }
@@ -236,9 +239,12 @@ void AddTaskPow(int& iter, const string &sPolinom, Tasks* task) {
 	int i(0);
 	int pow = readPow(iter, sPolinom);
 
+	int layer = get<Layer>(task->top()) + 1;
+
 	// Если считан первый полином на слое
 	if (get<Operator>(task->top()) == noOperator) {
 		get<Operator>(task->top()) = multiplication;
+		get<Layer>(task->top()) += 1;
 		FindPolinom = get<Pol1>(task->top());
 		i = 1;
 	}
@@ -247,7 +253,6 @@ void AddTaskPow(int& iter, const string &sPolinom, Tasks* task) {
 		get<Pol2>(task->top()) = "";
 	}
 
-	int layer = get<Layer>(task->top()) + 1;
 	// Плодится стек задач по перемножению полинома на 1 раз меньше
 	for (; i < pow - 1; i++) {
 		task->push({ layer, FindPolinom, multiplication , "" });

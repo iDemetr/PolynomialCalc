@@ -7,7 +7,7 @@ using namespace std;
 #define CALC_H
 
 /// <summary>
-/// 
+/// Применяет мат. операции в соответствии с формированной последовательностью действий.
 /// </summary>
 /// <param name=""></param>
 /// <returns></returns>

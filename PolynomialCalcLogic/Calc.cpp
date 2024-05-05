@@ -360,7 +360,7 @@ ptrPolinom CompleteBuff(BYTE layer, Buffer& buffer, ptrPolinom pol1, bool flag =
 	auto buff = &buffer.top();
 
 	if (buff->layer > layer && !flag)
-		throw exception("Нарушение последовательности выполнения действий!");
+		throw new exception("Нарушение последовательности выполнения действий!");
 
 	while (((buff->layer == layer && !flag) || (buff->layer >= layer && flag)) && !buffer.empty()) {
 		pol1 = CulcSwitch(pol1, buff->operation, buff->polinom);

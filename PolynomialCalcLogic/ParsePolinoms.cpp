@@ -11,8 +11,6 @@ std::vector<string> ParseMonoms(string sPolinom) {
 	int pos(0), numPolinom(0);
 	string value, lastValue;
 
-	cout << "\n\n Распознавание мономов:  ";
-
 	// Парсинг введенной строки с разбиеним в список по мономам
 	do {
 		pos = sPolinom.find_first_of(" ");											// Временное ограничение на разделение пробелами мономов и действий
@@ -32,13 +30,6 @@ std::vector<string> ParseMonoms(string sPolinom) {
 
 	auto ptr = list.begin();
 
-	while (ptr != list.end()) {
-		cout << *ptr;
-		ptr++;
-		if (ptr != list.end())
-			cout << ", ";
-	}
-
 	return list;
 }
 
@@ -49,8 +40,6 @@ ptrPolinom CreatePolinom(std::vector<string> LMonoms) {
 	int rank(0);
 
 	ptrPolinom polinom = new Polinom();
-
-	cout << "\n Сборка полинома: ";
 
 	try {
 		for (string var : LMonoms) {
@@ -75,10 +64,10 @@ ptrPolinom CreatePolinom(std::vector<string> LMonoms) {
 							rank = 1;
 						}
 						else if (variable[0] != ch)
-							throw exception("\t Ошибка! Больше одной переменных");
+							throw new exception("\t Ошибка! Больше одной переменных");
 					}
 					// Генерация ошибки, если после встречи переменной не встречен символ степени
-					else throw exception("\t Ошибка! Неверная запись полинома");
+					else throw new exception("\t Ошибка! Неверная запись полинома");
 				}
 
 				// Если встречено определение степени
@@ -90,7 +79,7 @@ ptrPolinom CreatePolinom(std::vector<string> LMonoms) {
 							rank *= 10;
 							rank += ch - '0';
 						}
-						else throw exception("\t Ошибка! Неверная запись полинома");
+						else throw new exception("\t Ошибка! Неверная запись полинома");
 					}
 					else {
 						rank = 0;
@@ -104,12 +93,10 @@ ptrPolinom CreatePolinom(std::vector<string> LMonoms) {
 			variable = ""; isVariable = false;
 		}
 	}
-	catch (const std::exception& e) {
-		cout << e.what() << endl;
+	catch (const std::exception* e) {
+		cout << e->what() << endl;
 		throw;
 	}
-
-	cout << *polinom;
 
 	return polinom;
 }

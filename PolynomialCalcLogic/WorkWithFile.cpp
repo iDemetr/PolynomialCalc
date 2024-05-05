@@ -3,13 +3,11 @@
 #include "pch.h"
 #include "Header.h"
 #include "PrintPolinoms.h"
+#include "WorkWithFile.h"
 
-/// <summary>
-/// 
-/// </summary>
-/// <returns></returns>
+
 bool SaveHistory(std::string task, ptrPolinom result) {
-	std::fstream fHistory ("History.txt");
+	std::fstream fHistory (FHistory);
 
 	std::string buff;
 
@@ -42,7 +40,7 @@ bool SaveHistory(std::string task, ptrPolinom result) {
 	}
 
 	if (!flag) {
-		std::ofstream fHistory("History.txt", std::ios_base::app);
+		std::ofstream fHistory(FHistory, std::ios_base::app);
 		fHistory << "{\n\t\"Task\": \"" << task << "\",";
 		fHistory << "\n\t\"Result\": \"" << *result << "\"\n}\n";
 	}
@@ -50,12 +48,9 @@ bool SaveHistory(std::string task, ptrPolinom result) {
 	return true;
 }
 
-/// <summary>
-/// 
-/// </summary>
-/// <param name="num"></param>
+
 vector <std::pair<std::string, std::string>> ReadHistory() {
-	std::ifstream fHistory("History.txt");
+	std::ifstream fHistory(FHistory);
 
 	std::string buff;
 	std::string task, result;
